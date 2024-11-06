@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator and Graphing Calculator</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+    .container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .toggle-button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 20px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    .calculator, .graphing-calculator {
+      display: none;
+    }
+    .input-field {
+      width: 300px;
+      padding: 10px;
+      font-size: 1rem;
+      margin-top: 20px;
+    }
+    .plot-button, .btn {
+      padding: 10px;
+      font-size: 1.5rem;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .calculator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 240px;
+    }
+    .display {
+      background-color: #222;
+      color: #fff;
+      text-align: right;
+      padding: 1rem;
+      font-size: 2rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      width: 86%;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+    }
+    .equals { background-color: #28a745; color: #fff; }
+    .zero { grid-column: span 2; }
+    #graph { width: 100%; max-width: 800px; height: 500px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <button class="toggle-button" onclick="toggleCalculator()">Switch Calculator</button>
+
+  <!-- Regular Calculator -->
+  <div class="calculator" id="regularCalculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="btn" onclick="clearDisplay()">C</button>
+      <button class="btn" onclick="deleteLast()">⌫</button>
+      <button class="btn" onclick="addOperator('/')">/</button>
+      <button class="btn" onclick="addOperator('*')">×</button>
+      <button class="btn" onclick="addNumber('7')">7</button>
+      <button class="btn" onclick="addNumber('8')">8</button>
+      <button class="btn" onclick="addNumber('9')">9</button>
+      <button class="btn" onclick="addOperator('-')">-</button>
+      <button class="btn" onclick="addNumber('4')">4</button>
+      <button class="btn" onclick="addNumber('5')">5</button>
+      <button class="btn" onclick="addNumber('6')">6</button>
+      <button class="btn" onclick="addOperator('+')">+</button>
+      <button class="btn" onclick="addNumber('1')">1</button>
+      <button class="btn" onclick="addNumber('2')">2</button>
+      <button class="btn" onclick="addNumber('3')">3</button>
+      <button class="btn equals" onclick="calculateResult()">=</button>
+      <button class="btn zero" onclick="addNumber('0')">0</button>
+      <button class="btn" onclick="addDecimal()">.</button>
+    </div>
+  </div>
+
+  <!-- Graphing Calculator -->
+  <div class="graphing-calculator" id="graphingCalculator">
+    <input type="text" id="functionInput" class="input-field" placeholder="Enter a function, e.g., x^2 + 3*x - 2">
+    <button class="plot-button" onclick="plotFunction()">Plot Graph</button>
+    <div id="graph"></div>
+  </div>
+
+  <script>
+    // Toggle between calculators
+    function toggleCalculator() {
+      const regularCalc = document.getElementById("regularCalculator");
+      const graphCalc = document.getElementById("graphingCalculator");
+
+      if (regularCalc.style.display === "none") {
+        regularCalc.style.display = "block";
+        graphCalc.style.display = "none";
+      } else {
+        regularCalc.style.display = "none";
+        graphCalc.style.display = "block";
+      }
+    }
+
+    // Regular Calculator JavaScript
+    let display = document.getElementById("display");
+    let currentInput = "0";
+
+    function clearDisplay() { currentInput = "0"; display.innerText = currentInput; }
+    function deleteLast() { currentInput = currentInput.slice(0, -1) || "0"; display.innerText = currentInput; }
+    function addNumber(num) { currentInput = currentInput === "0" ? num : currentInput + num; display.innerText = currentInput; }
+    function addOperator(operator) { currentInput = /[+\-*/]$/.test(currentInput) ? currentInput.slice(0, -1) + operator : currentInput + operator; display.innerText = currentInput; }
+    function addDecimal() { if (!currentInput.includes(".")) { currentInput += "."; display.innerText = currentInput; }}
+    function calculateResult() { try { currentInput = eval(currentInput.replace("×", "*")).toString(); } catch { currentInput = "Error"; } display.innerText = currentInput; }
+
+    // Graphing Calculator JavaScript
+    function plotFunction() {
+      const input = document.getElementById('functionInput').value;
+      const xValues = [];
+      const yValues = [];
+
+      for (let x = -10; x <= 10; x += 0.1) {
+        xValues.push(x);
+        try {
+          const y = eval(input.replace(/x/g, `(${x})`).replace(/\^/g, '**'));
+          yValues.push(y);
+        } catch (error) {
+          alert('Invalid function. Please enter a valid mathematical expression.');
+          return;
+        }
+      }
+
+      const trace = { x: xValues, y: yValues, mode: 'lines', type: 'scatter' };
+      const layout = { title: `y = ${input}`, xaxis: { title: 'x' }, yaxis: { title: 'y' } };
+      Plotly.newPlot('graph', [trace], layout);
+    }
+
+    // Initialize view with regular calculator visible
+    document.getElementById("regularCalculator").style.display = "block";
+  </script>
+</body>
+</html>
